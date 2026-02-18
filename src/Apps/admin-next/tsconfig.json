@@ -26,13 +26,9 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "**/*.js",
-    "**/*.jsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    ".next/types/**/*.js",
-    ".next/dev/types/**/*.js",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/unused_pages_archive", "src/pages-legacy"]
 }

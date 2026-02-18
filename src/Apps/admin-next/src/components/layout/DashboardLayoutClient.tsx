@@ -20,14 +20,12 @@ import { useKeycloak } from "@/contexts/KeycloakContext";
 
 export default function DashboardLayoutClient({
   children,
-}: {
-  children: React.ReactNode;
 }) {
   const { width, breakpoints } = useWidth();
   const [collapsed] = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
-  // const { isAuth, user } = useSelector((state: any) => state.auth);
+  // const { isAuth, user } = useSelector((state) => state.auth);
   const { authenticated, keycloakReady } = useKeycloak();
 
   useEffect(() => {
