@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Store the initial directory where the script is located
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Resolve the project root directory (one level up from this script's location)
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 main() {
-    # Always return to the script directory at the beginning of main
-    cd "$SCRIPT_DIR" || exit
+    # Always return to the project root directory at the beginning of main
+    cd "$ROOT_DIR" || exit
 
     clear
     echo ""
@@ -65,7 +65,7 @@ process_migration() {
 
     echo ""
     echo "-- Navigating from $(pwd) to $serviceDir --"
-    cd "$SCRIPT_DIR/$serviceDir" || {
+    cd "$ROOT_DIR/$serviceDir" || {
         echo "[ERROR] Failed to navigate to $serviceDir"
         read -p "Press Enter to continue..."
         main
@@ -133,14 +133,14 @@ process_migration() {
     case ${continue,,} in
         y|yes)
             echo ""
-            echo "-- Returning to script directory: $SCRIPT_DIR --"
-            cd "$SCRIPT_DIR" || exit
+            echo "-- Returning to project root directory: $ROOT_DIR --"
+            cd "$ROOT_DIR" || exit
             main
             ;;
         *)
             echo ""
-            echo "-- Returning to script directory: $SCRIPT_DIR --"
-            cd "$SCRIPT_DIR" || exit
+            echo "-- Returning to project root directory: $ROOT_DIR --"
+            cd "$ROOT_DIR" || exit
             echo "Thank you for using the migration script!"
             ;;
     esac
@@ -148,4 +148,3 @@ process_migration() {
 
 # Run main function
 main
-
