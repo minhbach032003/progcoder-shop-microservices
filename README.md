@@ -254,8 +254,10 @@ progcoder-shop-microservices/
 │   ├── imgs/                        # Architecture diagrams and screenshots
 │   └── postman collections/         # API testing collections
 ├── local-data/                      # Persistent data volumes
+├── scripts/                          # Dev-utility shell scripts (migrations)
 ├── docker-compose.infrastructure.yml           # Infrastructure services
 ├── docker-compose.yml               # Application services
+├── Makefile                         # `make` shortcuts for common commands
 └── README.md                        # This file
 ```
 
@@ -383,13 +385,13 @@ Before running the project, ensure you have the following installed:
 1. **Create environment file** (Infrastructure uses environment variables):
 
 ```bash
-# Copy the example environment file
-cp .env.example .env
+# Copy the sample environment file to .env (skips if .env already exists)
+make env
 
 # Edit .env and configure your custom ports and credentials if needed
 ```
 
-**Note**: The `.env.example` file contains all required environment variables with default values. Key configurations include:
+**Note**: The `.env.sample` file contains all required environment variables with default values. Key configurations include:
 - Database ports (custom ports to avoid conflicts: PostgreSQL 5433, MongoDB 27018, MySQL 3307, SQL Server 1434)
 - Database credentials
 - Message broker settings (RabbitMQ on ports 5673/15673)
@@ -407,35 +409,35 @@ git clone <repository-url>
 cd progcoder-shop-microservices
 
 # Copy and configure environment variables
-cp .env.example .env
+make env
 
 # Option 1: Build all images in parallel, then start services
-docker-compose build --parallel
-docker-compose up -d
+make build
+make up
 
 # Option 2: Build and start services in one command
-docker-compose up --build -d
+make start
 
 # Check all services are running
-docker-compose ps
+make ps
 
 # View logs
-docker-compose logs -f
+make logs
 
 # View logs for specific service
-docker-compose logs -f [service-name]
+make logs-[service-name]
 
 # Stop all services
-docker-compose down
+make down
 
 # Stop and remove volumes (clean slate)
-docker-compose down -v
+make down-v
 
 # Restart all services
-docker-compose restart
+make restart
 
 # Rebuild and restart all services
-docker-compose up --build -d --force-recreate
+make rebuild
 ```
 
 After starting, access:
@@ -454,13 +456,13 @@ After starting, access:
 
 ```bash
 # Start infrastructure services (databases, message broker, monitoring, etc.)
-docker-compose -f docker-compose.infrastructure.yml up -d
+make infra-up
 
 # Wait for all services to be healthy (check with)
-docker-compose -f docker-compose.infrastructure.yml ps
+make infra-ps
 
 # View logs if needed
-docker-compose -f docker-compose.infrastructure.yml logs -f [service-name]
+make infra-logs-[service-name]
 ```
 
 #### 2. Setup Databases
@@ -470,12 +472,7 @@ docker-compose -f docker-compose.infrastructure.yml logs -f [service-name]
 Use this to apply all existing migrations to your databases without creating new ones:
 
 ```bash
-# On Linux/Mac/WSL
-chmod +x run-migration-linux.sh
-./run-migration-linux.sh
-
-# On Windows (PowerShell/CMD)
-run-migration-windows.bat
+make migrate
 ```
 
 This script will automatically:
@@ -489,12 +486,7 @@ This script will automatically:
 Use this when you need to create a new migration after modifying entities:
 
 ```bash
-# On Linux/Mac/WSL
-chmod +x add-migration-linux.sh
-./add-migration-linux.sh
-
-# On Windows (PowerShell/CMD)
-add-migration-windows.bat
+make migration-add
 ```
 
 This script will:
@@ -517,96 +509,40 @@ This script will:
 Each service can be started individually. Open separate terminal windows:
 
 ```bash
-# Catalog Service
-cd src/Services/Catalog/Api/Catalog.Api
-dotnet run
-
-# Basket Service
-cd src/Services/Basket/Api/Basket.Api
-dotnet run
-
-# Order Service
-cd src/Services/Order/Api/Order.Api
-dotnet run
-
-# Inventory Service
-cd src/Services/Inventory/Api/Inventory.Api
-dotnet run
-
-# Discount Service
-cd src/Services/Discount/Api/Discount.Api
-dotnet run
-
-# Notification Service
-cd src/Services/Notification/Api/Notification.Api
-dotnet run
-
-# Report Service
-cd src/Services/Report/Api/Report.Api
-dotnet run
-
-# Search Service
-cd src/Services/Search/Api/Search.Api
-dotnet run
-
-# Communication Service
-cd src/Services/Communication/Api/Communication.Api
-dotnet run
-
-# API Gateway
-cd src/ApiGateway/YarpApiGateway
-dotnet run
+make run-catalog-api        # Catalog Service
+make run-basket-api         # Basket Service
+make run-order-api          # Order Service
+make run-inventory-api      # Inventory Service
+make run-discount-api       # Discount Service
+make run-notification-api   # Notification Service
+make run-report-api         # Report Service
+make run-search-api         # Search Service
+make run-communication-api  # Communication Service
+make run-api-gateway        # API Gateway
 ```
 
 #### 5. Start Worker Services (Background Jobs)
 
 ```bash
-# Catalog Outbox Worker
-cd src/Services/Catalog/Worker/Catalog.Worker.Outbox
-dotnet run
-
-# Basket Outbox Worker
-cd src/Services/Basket/Worker/Basket.Worker.Outbox
-dotnet run
-
-# Order Outbox Worker
-cd src/Services/Order/Worker/Order.Worker.Outbox
-dotnet run
-
-# Inventory Outbox Worker
-cd src/Services/Inventory/Worker/Inventory.Worker.Outbox
-dotnet run
-
-# Notification Consumer Worker
-cd src/Services/Notification/Worker/Notification.Worker.Consumer
-dotnet run
-
-# Search Consumer Worker
-cd src/Services/Search/Worker/Search.Worker.Consumer
-dotnet run
+make run-catalog-worker       # Catalog Outbox Worker
+make run-basket-worker        # Basket Outbox Worker
+make run-order-worker         # Order Outbox Worker
+make run-inventory-worker     # Inventory Outbox Worker
+make run-notification-worker  # Notification Consumer Worker
+make run-search-worker        # Search Consumer Worker
 ```
 
 #### 6. Start Frontend Applications
 
 ```bash
-# App Admin
-cd src/Apps/App.Admin
-npm install
-npm run dev
-# Access at: http://localhost:3001
-
-# App Store
-cd src/Apps/App.Store
-npm install
-npm run dev
-# Access at: http://localhost:3002
+make run-app-admin  # App Admin - Access at: http://localhost:3001
+make run-app-store  # App Store - Access at: http://localhost:3002
 ```
 
 #### 7. Start Job Orchestrator (Optional)
 
 ```bash
-cd src/JobOrchestrator/App.Job
-dotnet run
+make run-job-orchestrator
 ```
 
 ### Access URLs
@@ -674,33 +610,30 @@ The YARP API Gateway provides unified access to all microservices:
 
 ### Running Individual Services
 
-You can run services individually for development:
+You can run services individually for development, with hot reload:
 
 ```bash
-cd src/Services/[ServiceName]/Api/[ServiceName].Api
-dotnet watch run
+make watch SERVICE=[ServiceName]
 ```
 
 ### Running Tests
 
 ```bash
 # Run all tests
-dotnet test
+make test
 
 # Run tests for a specific service
-cd src/Services/[ServiceName]/Tests
-dotnet test
+make test-svc SERVICE=[ServiceName]
 ```
 
 ### Database Migrations
 
 ```bash
 # Add migration
-cd src/Services/[ServiceName]/Infrastructure
-dotnet ef migrations add [MigrationName] -s ../Api/[ServiceName].Api
+make ef-add SERVICE=[ServiceName] NAME=[MigrationName]
 
 # Apply migration
-dotnet ef database update -s ../Api/[ServiceName].Api
+make ef-update SERVICE=[ServiceName]
 ```
 
 ### Building Docker Images
@@ -711,19 +644,19 @@ This approach helps avoid Docker daemon overload and makes debugging easier:
 
 ```bash
 # Step 1: Start infrastructure services first
-docker-compose up -d redis postgres-sql mysql mongodb sql-server elasticsearch rabbitmq minio keycloak otel-collector
+make build-infra-svc
 
 # Step 2: Build and run gRPC services
-docker-compose up --build -d catalog-grpc inventory-grpc order-grpc discount-grpc report-grpc
+make build-grpc
 
 # Step 3: Build and run API services
-docker-compose up --build -d catalog-api basket-api inventory-api order-api discount-api notification-api search-api report-api communication-api
+make build-api-svc
 
 # Step 4: Build and run Workers
-docker-compose up --build -d basket-worker-outbox catalog-woker-outbox catalog-worker-consumer inventory-worker-outbox inventory-worker-consumer order-woker-outbox order-worker-consumer search-worker-consumer notification-worker-consumer notification-worker-processor
+make build-workers
 
 # Step 5: Build and run API Gateway and Apps
-docker-compose up --build -d api-gateway app-admin app-store app-job
+make build-gateway-apps
 ```
 
 #### Method 2: Build All Services at Once (For Powerful Machines)
@@ -731,34 +664,31 @@ docker-compose up --build -d api-gateway app-admin app-store app-job
 This method is faster but requires sufficient system resources:
 
 ```bash
-# Build all images in parallel
-docker-compose build --parallel
-
-# Start all services
-docker-compose up -d
+# Build all images in parallel, then start all services
+make build-all
 
 # Or combine both steps
-docker-compose up --build -d
+make start
 ```
 
 #### Method 3: Build Specific Services
 
 ```bash
 # Build specific service
-docker-compose build [service-name]
+make build-[service-name]
 
 # Build and start specific service
-docker-compose up --build -d [service-name]
+make up-[service-name]
 ```
 
 #### Rebuild Images and Start Services
 
 ```bash
 # Force rebuild all images without cache
-docker-compose build --no-cache --parallel
+make build-nocache
 
 # Rebuild and restart all services
-docker-compose up --build -d --force-recreate
+make rebuild
 ```
 
 ## Troubleshooting
@@ -799,31 +729,31 @@ docker-compose up --build -d --force-recreate
 
 ```bash
 # Check container status
-docker-compose ps
+make ps
 
 # View logs for all services
-docker-compose logs -f
+make logs
 
 # View logs for specific service
-docker-compose logs -f [service-name]
+make logs-[service-name]
 
 # Restart a service
-docker-compose restart [service-name]
+make restart-[service-name]
 
 # Stop all services
-docker-compose down
+make down
 
 # Stop all services and remove volumes (clean slate)
-docker-compose down -v
+make down-v
 
 # Remove stopped containers and unused images
-docker system prune -f
+make prune
 
 # Remove all unused images, containers, networks, and volumes
-docker system prune -af --volumes
+make prune-all
 
 # Check Docker disk usage
-docker system df
+make df
 
 # View running containers
 docker ps
@@ -835,26 +765,26 @@ docker ps -a
 docker exec -it [container-name] bash
 
 # Check container resource usage
-docker stats
+make stats
 ```
 
 ### Infrastructure Services Only Commands
 
 ```bash
 # Check container status
-docker-compose -f docker-compose.infrastructure.yml ps
+make infra-ps
 
 # View logs
-docker-compose -f docker-compose.infrastructure.yml logs -f [service-name]
+make infra-logs-[service-name]
 
 # Restart a service
-docker-compose -f docker-compose.infrastructure.yml restart [service-name]
+make infra-restart-[service-name]
 
 # Stop all services
-docker-compose -f docker-compose.infrastructure.yml down
+make infra-down
 
 # Remove volumes (clean slate)
-docker-compose -f docker-compose.infrastructure.yml down -v
+make infra-down-v
 ```
 
 ## Contributing
